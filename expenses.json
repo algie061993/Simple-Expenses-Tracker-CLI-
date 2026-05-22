@@ -26,5 +26,26 @@
     "amount": 100,
     "date": "2026-05-22T10:24:32.569Z",
     "selected": false
+  },
+  {
+    "id": 5,
+    "name": "food",
+    "amount": 100,
+    "date": "2026-05-22T12:08:17.662Z",
+    "selected": false
+  },
+  {
+    "id": 6,
+    "name": "transport",
+    "amount": 200,
+    "date": "2026-05-22T12:08:17.881Z",
+    "selected": false
+  },
+  {
+    "id": 7,
+    "name": "rent",
+    "amount": 300,
+    "date": "2026-05-22T12:08:18.045Z",
+    "selected": false
   }
 ]

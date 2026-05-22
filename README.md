@@ -56,26 +56,26 @@ Shows all expenses and their total for a specific date.
 node index.js total-by-date 2026-05-22
 ```
 
-### Select an Expense
+### Select and Total Expenses
 
 ```bash
-node index.js select <id>
+node index.js select <id1> <id2> <id3> ...
 ```
 
-Marks an expense as selected by its ID.
+Marks multiple expenses as selected by their IDs and displays their total.
 
 **Example:**
 ```bash
-node index.js select 3
+node index.js select 1 2 4
 ```
 
-### View Selected Expenses Total
+### Show Help
 
 ```bash
-node index.js selected-total
+node index.js help
 ```
 
-Calculates and displays the total of all selected expenses, then clears the selections.
+Displays all available commands and their usage.
 
 ## Data Storage
 

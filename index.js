@@ -4,21 +4,25 @@
  * You can also add a feature to edit an existing expense by its ID or name.
  **/
 
-const fs = require("fs");
+const fs = require("fs"); // File system module for reading and writing files
 
-const command = process.argv[2];
-const arguments = Number(process.argv[3]);
-const expenseName = process.argv[4];
-const dateInput = process.argv[3];
-const expenseId = Number(process.argv[3]);
+const command = process.argv[2]; // Get the command from command line arguments
+const arguments = Number(process.argv[3]); // Parse the third argument as a number
+const expenseName = process.argv[4]; // Get the expense name from command line
+const dateInput = process.argv[3]; // Get date input for date-specific queries
+const expenseId = Number(process.argv[3]); // Parse expense ID as a number
+const multipleIds = process.argv
+  .slice(3)
+  .map(Number)
+  .filter((id) => !isNaN(id)); // Parse multiple IDs from arguments
 
 /**
  * Reads and parses the expenses.json file to retrieve all expenses.
  * @returns {Array} An array of expense objects.
  */
 const getAllExpenses = () => {
-  const expenses = fs.readFileSync("expenses.json", "utf-8");
-  return JSON.parse(expenses);
+  const expenses = fs.readFileSync("expenses.json", "utf-8"); // Read expenses data from file
+  return JSON.parse(expenses); // Parse JSON string to JavaScript object
 };
 
 /**
@@ -26,8 +30,8 @@ const getAllExpenses = () => {
  * @param {Array} expenses - The array of expense objects to save.
  */
 const expensesSave = (expenses) => {
-  const textData = JSON.stringify(expenses, null, 2);
-  fs.writeFileSync("expenses.json", textData);
+  const textData = JSON.stringify(expenses, null, 2); // Convert expenses array to formatted JSON string
+  fs.writeFileSync("expenses.json", textData); // Write formatted JSON to file
 };
 
 /**
@@ -52,20 +56,20 @@ const addExpenses = (amount, name) => {
     return;
   }
 
-  const currentExpenses = getAllExpenses();
+  const currentExpenses = getAllExpenses(); // Get existing expenses from file
 
   const newExpenses = {
-    id: currentExpenses.length + 1,
-    name: name,
-    amount: amount,
-    date: new Date().toISOString(),
-    selected: false,
+    id: currentExpenses.length + 1, // Auto-increment ID based on array length
+    name: name, // Expense name provided by user
+    amount: amount, // Expense amount provided by user
+    date: new Date().toISOString(), // Current date in ISO format
+    selected: false, // Default selection status
   };
 
-  currentExpenses.push(newExpenses);
+  currentExpenses.push(newExpenses); // Add new expense to array
 
-  expensesSave(currentExpenses);
-  console.log("Expense added successfully!");
+  expensesSave(currentExpenses); // Save updated expenses to file
+  console.log("Expense added successfully!"); // Confirm successful addition
 };
 
 /**
@@ -73,45 +77,64 @@ const addExpenses = (amount, name) => {
  * Shows [Selected] tag for expenses that have been marked as selected.
  */
 const listExpenses = () => {
-  const expenses = getAllExpenses();
+  const expenses = getAllExpenses(); // Retrieve all expenses
 
   if (expenses.length === 0) {
-    console.log("No expenses found.");
+    console.log("No expenses found."); // Display message if no expenses exist
     return;
   }
 
-  console.log("\n--- Your Expenses ---");
+  console.log("\n--- Your Expenses ---"); // Print header for expenses list
 
   for (let i = 0; i < expenses.length; i++) {
-    const expensesItem = expenses[i];
+    const expensesItem = expenses[i]; // Get current expense item
 
     console.log(
-      `${expensesItem.id}. ${expensesItem.name} - $${expensesItem.amount} (Date: ${expensesItem.date}) ${expensesItem.selected ? "[Selected]" : ""}`,
+      `${expensesItem.id}. ${expensesItem.name} - $${expensesItem.amount} (Date: ${expensesItem.date}) ${expensesItem.selected ? "[Selected]" : ""}`, // Display expense details
     );
   }
-  console.log("---------------------\n");
+  console.log("---------------------\n"); // Print closing line
 };
 
 /**
- * Marks an expense as selected by its ID.
- * @param {number} id - The ID of the expense to mark as selected.
+ * Marks multiple expenses as selected by their IDs and displays the total.
+ * @param {Array} ids - Array of expense IDs to mark as selected and total.
  */
-const selectedExpense = (id) => {
-  const expenses = getAllExpenses();
-  const expense = expenses.find((item) => item.id === id);
-  if (!expense) {
-    console.log(`Expense with ID ${id} not found.`);
+const selectAndTotalExpenses = (ids) => {
+  const expenses = getAllExpenses(); // Get all expenses
+  let sum = 0; // Initialize sum
+  let foundCount = 0; // Count of found expenses
+
+  if (expenses.length === 0) {
+    console.log("No expenses found."); // Error if no expenses exist
     return;
   }
-  const idToFind = expense.id;
-  const selectedExpense = expenses.find((item) => item.id === idToFind);
-  if (!selectedExpense) {
-    console.log(`Expense with ID ${id} not found.`);
+
+  console.log("--- Selected Expenses ---"); // Print header
+
+  for (let i = 0; i < expenses.length; i++) {
+    if (ids.includes(expenses[i].id)) {
+      expenses[i].selected = true; // Mark expense as selected
+      sum += expenses[i].amount; // Add to sum
+      foundCount++; // Increment found count
+      console.log(`${expenses[i].name}: ₱${expenses[i].amount}`); // Display expense
+    }
+  }
+
+  if (foundCount === 0) {
+    console.log("No expenses found with the provided IDs."); // Error if none found
     return;
   }
-  selectedExpense.selected = true;
-  expensesSave(expenses);
-  console.log(`Expense with ID ${id} has been selected.`);
+
+  expensesSave(expenses); // Save changes
+  listExpenses(); // Display all expenses with updated selection status
+  console.log("----------------------------------------");
+  console.log(`Total for selected expenses: ₱${sum}`); // Display total
+
+  for (let i = 0; i < expenses.length; i++) {
+    expenses[i].selected = false; // Reset all selections
+  }
+  expensesSave(expenses); // Save reset selections to file
 };
 
 /**
@@ -119,20 +142,20 @@ const selectedExpense = (id) => {
  * Shows each expense and its amount, then displays the grand total.
  */
 const TotalExpenses = () => {
-  const expenses = getAllExpenses();
+  const expenses = getAllExpenses(); // Get all expenses
 
-  let sum = 0;
-  let name = "";
-  console.log("----------- List of Expenses -----------");
+  let sum = 0; // Initialize total sum
+  let name = ""; // Initialize name variable
+  console.log("----------- List of Expenses -----------"); // Print header
   for (let i = 0; i < expenses.length; i++) {
-    sum += expenses[i].amount;
-    name = expenses[i].name;
+    sum += expenses[i].amount; // Add each expense amount to sum
+    name = expenses[i].name; // Store current expense name
 
-    console.log(`${name}: ₱${expenses[i].amount}`);
+    console.log(`${name}: ₱${expenses[i].amount}`); // Display each expense
   }
   console.log("----------------------------------------");
   console.log("------------ Total Expenses ------------");
-  console.log(`Total Expenses: ₱${sum}`);
+  console.log(`Total Expenses: ₱${sum}`); // Display grand total
   console.log("----------------------------------------");
 };
 
@@ -141,53 +164,30 @@ const TotalExpenses = () => {
  * @param {string} targetDate - The date to filter expenses by (YYYY-MM-DD format).
  */
 const totalBydate = (targetDate) => {
-  const expenses = getAllExpenses();
+  const expenses = getAllExpenses(); // Get all expenses
 
   if (
     isNaN(Date.parse(targetDate)) ||
     targetDate === undefined ||
     targetDate.trim() === ""
   ) {
-    console.log("Please provide a valid date in the format YYYY-MM-DD.");
+    console.log("Please provide a valid date in the format YYYY-MM-DD."); // Validate date input
     return;
   }
 
-  let sum = 0;
-  console.log(`--- Expenses for ${targetDate} ---`);
+  let sum = 0; // Initialize sum for this date
+  console.log(`--- Expenses for ${targetDate} ---`); // Print date header
 
   for (let i = 0; i < expenses.length; i++) {
-    const expenseDate = new Date(expenses[i].date).toISOString().split("T")[0];
+    const expenseDate = new Date(expenses[i].date).toISOString().split("T")[0]; // Extract date portion only
     if (expenseDate === targetDate) {
-      sum += expenses[i].amount;
-      console.log(`${expenses[i].name}: ₱${expenses[i].amount}`);
+      sum += expenses[i].amount; // Add amount if date matches
+      console.log(`${expenses[i].name}: ₱${expenses[i].amount}`); // Display matching expense
     }
   }
   console.log("----------------------------------------");
-  console.log(`Total Expenses for ${targetDate}: ₱${sum}`);
+  console.log(`Total Expenses for ${targetDate}: ₱${sum}`); // Display total for date
   console.log("----------------------------------------");
-};
-
-/**
- * Calculates and displays the total of all selected expenses.
- * Clears the selection status for all expenses after calculation.
- */
-const selectedExpenseTotal = () => {
-  const expenses = getAllExpenses();
-  let sum = 0;
-
-  console.log("--- Selected Expenses ---");
-  for (let i = 0; i < expenses.length; i++) {
-    if (expenses[i].selected) {
-      sum += expenses[i].amount;
-      console.log(`${expenses[i].name}: $${expenses[i].amount}`);
-    }
-  }
-  console.log("----------------------------------------");
-  console.log(`Total for selected expenses: $${sum}`);
-  for (let i = 0; i < expenses.length; i++) {
-    expenses[i].selected = false;
-  }
-  expensesSave(expenses);
 };
 
 const helpMessage = `Usage:
@@ -195,26 +195,24 @@ const helpMessage = `Usage:
   node index.js list                      - List all expenses.
   node index.js total                     - Display the total of all expenses.
   node index.js total-by-date <date>     - Display total expenses for a specific date.
-  node index.js select <id>              - Mark an expense as selected.
-  node index.js selected-total           - Display the total of all selected expenses.
-`;
+  node index.js select <id1> <id2> ...   - Mark expenses as selected and display their total.
+  node index.js help                     - Display all available commands.
+`; // Help message displayed for 'help' command
 
 if (command === "add") {
-  addExpenses(arguments, expenseName);
+  addExpenses(arguments, expenseName); // Execute add command
 } else if (command === "list") {
-  listExpenses();
+  listExpenses(); // Execute list command
 } else if (command === "total") {
-  TotalExpenses();
+  TotalExpenses(); // Execute total command
 } else if (command === "total-by-date") {
-  totalBydate(dateInput);
+  totalBydate(dateInput); // Execute total-by-date command
 } else if (command === "select") {
-  selectedExpense(expenseId);
-} else if (command === "selected-total") {
-  selectedExpenseTotal(expenseId);
+  selectAndTotalExpenses(multipleIds); // Execute select command with multiple IDs
 } else if (command === "help") {
-  console.log(helpMessage);
+  console.log(helpMessage); // Display help message
 } else {
   console.log(
-    "Invalid command. Please use 'add', 'list', 'total', 'total-by-date', or 'selected-total'.",
+    "Invalid command. Please use 'add', 'list', 'total', 'total-by-date', 'select', or 'help'.", // Error for invalid command
   );
 }
