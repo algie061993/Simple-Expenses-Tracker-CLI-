@@ -190,6 +190,15 @@ const selectedExpenseTotal = () => {
   expensesSave(expenses);
 };
 
+const helpMessage = `Usage:
+  node index.js add <amount> <name>       - Add a new expense with the specified amount and name.
+  node index.js list                      - List all expenses.
+  node index.js total                     - Display the total of all expenses.
+  node index.js total-by-date <date>     - Display total expenses for a specific date.
+  node index.js select <id>              - Mark an expense as selected.
+  node index.js selected-total           - Display the total of all selected expenses.
+`;
+
 if (command === "add") {
   addExpenses(arguments, expenseName);
 } else if (command === "list") {
@@ -202,6 +211,8 @@ if (command === "add") {
   selectedExpense(expenseId);
 } else if (command === "selected-total") {
   selectedExpenseTotal(expenseId);
+} else if (command === "help") {
+  console.log(helpMessage);
 } else {
   console.log(
     "Invalid command. Please use 'add', 'list', 'total', 'total-by-date', or 'selected-total'.",
