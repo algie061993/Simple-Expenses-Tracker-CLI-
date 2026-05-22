@@ -90,7 +90,7 @@ const listExpenses = () => {
     const expensesItem = expenses[i]; // Get current expense item
 
     console.log(
-      `${expensesItem.id}. ${expensesItem.name} - $${expensesItem.amount} (Date: ${expensesItem.date}) ${expensesItem.selected ? "[Selected]" : ""}`, // Display expense details
+      `${expensesItem.id}. ${expensesItem.name} - $${expensesItem.amount} (Date: ${expensesItem.date.slice(0, 10)}) ${expensesItem.selected ? "[Selected]" : ""}`, // Display expense details
     );
   }
   console.log("---------------------\n"); // Print closing line
