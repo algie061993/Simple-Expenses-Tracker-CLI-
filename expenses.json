@@ -3,12 +3,28 @@
     "id": 1,
     "name": "sugar",
     "amount": 100,
-    "date": "2026-05-20T11:52:10.813Z"
+    "date": "2026-05-20T11:52:10.813Z",
+    "selected": false
   },
   {
     "id": 2,
     "name": "rice",
     "amount": 300,
-    "date": "2026-05-20T11:52:57.980Z"
+    "date": "2026-05-20T11:52:57.980Z",
+    "selected": false
+  },
+  {
+    "id": 3,
+    "name": "bigas",
+    "amount": 50,
+    "date": "2026-05-22T10:24:10.945Z",
+    "selected": false
+  },
+  {
+    "id": 4,
+    "name": "kangkong",
+    "amount": 100,
+    "date": "2026-05-22T10:24:32.569Z",
+    "selected": false
   }
 ]
