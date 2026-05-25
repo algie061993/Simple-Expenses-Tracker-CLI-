@@ -15,7 +15,21 @@ const multipleIds = process.argv
   .slice(3)
   .map(Number)
   .filter((id) => !isNaN(id)); // Parse multiple IDs from arguments
+// Remove or replace the old newAmount and newName declarations with this:
+const arg4 = process.argv[4];
+const arg5 = process.argv[5];
 
+let newAmount = undefined;
+let newName = undefined;
+
+// If the first update parameter is a number, assign it to amount
+if (arg4 !== undefined && !isNaN(Number(arg4))) {
+  newAmount = Number(arg4);
+  newName = arg5; // The next argument (if any) must be the name
+} else if (arg4 !== undefined) {
+  // If the first parameter isn't a number, treat it as the name
+  newName = arg4;
+}
 /**
  * Reads and parses the expenses.json file to retrieve all expenses.
  * @returns {Array} An array of expense objects.
@@ -55,11 +69,23 @@ const addExpenses = (amount, name) => {
     console.log("Please provide a valid name for the expense.");
     return;
   }
-
   const currentExpenses = getAllExpenses(); // Get existing expenses from file
+  // 1. Start by assuming the maximum ID found so far is 0
+  let maxId = 0;
+
+  // 2. Loop through every single existing expense item
+  for (let i = 0; i < currentExpenses.length; i++) {
+    // If this item's ID is bigger than our maxId, update our maxId tracker
+    if (currentExpenses[i].id > maxId) {
+      maxId = currentExpenses[i].id;
+    }
+  }
+
+  // 3. The new ID will always be 1 higher than the absolute maximum ID found
+  const nextId = maxId + 1;
 
   const newExpenses = {
-    id: currentExpenses.length + 1, // Auto-increment ID based on array length
+    id: nextId, // Use the calculated next ID
     name: name, // Expense name provided by user
     amount: amount, // Expense amount provided by user
     date: new Date().toISOString(), // Current date in ISO format
@@ -90,7 +116,7 @@ const listExpenses = () => {
     const expensesItem = expenses[i]; // Get current expense item
 
     console.log(
-      `${expensesItem.id}. ${expensesItem.name} - $${expensesItem.amount} (Date: ${expensesItem.date.slice(0, 10)}) ${expensesItem.selected ? "[Selected]" : ""}`, // Display expense details
+      `${expensesItem.id}. ${expensesItem.name} - ₱${expensesItem.amount} (Date: ${expensesItem.date.slice(0, 10)}) ${expensesItem.selected ? "[Selected]" : ""}`, // Display expense details
     );
   }
   console.log("---------------------\n"); // Print closing line
@@ -190,13 +216,86 @@ const totalBydate = (targetDate) => {
   console.log("----------------------------------------");
 };
 
+// Function to delete an expense by its ID with validation and confirmation
+const deletedExpenses = (id) => {
+  const expenses = getAllExpenses();
+  const deletedExpense = expenses.find((expense) => expense.id === id); // Find expense to delete by ID
+
+  if (id === undefined || isNaN(id)) {
+    console.log("Please provide a valid ID to delete an expense.");
+    return; // Exit if ID is invalid
+  }
+
+  if (!expenses.some((expense) => expense.id === id)) {
+    console.log(`No expense found with ID ${id}.`);
+    return; // Exit if no expense matches the ID
+  }
+  const updatedExpenses = expenses.filter((expense) => expense.id !== id); // Filter out the expense to delete
+  expensesSave(updatedExpenses); // Save updated expenses to file
+  console.log(`Expense with ID ${id} has been deleted successfully!`); // Confirm deletion
+};
+
+// Function to update an existing expense by its ID with validation and confirmation
+// Function to update an existing expense by its ID with validation and confirmation
+const updateExpense = (id, updatedAmount, updatedName) => {
+  const expenses = getAllExpenses();
+  const expenseIndex = expenses.findIndex((expense) => expense.id === id);
+
+  if (id === undefined || isNaN(id)) {
+    console.log("Please provide a valid ID to update an expense.");
+    return;
+  }
+
+  if (expenseIndex === -1) {
+    console.log(`No expense found with ID ${id}.`);
+    return;
+  }
+
+  // Ensure at least one property is being updated
+  if (updatedAmount === undefined && updatedName === undefined) {
+    console.log("Please provide an amount, a name, or both to update.");
+    return;
+  }
+
+  // Validate amount ONLY if the user provided one
+  if (updatedAmount !== undefined) {
+    if (isNaN(updatedAmount) || updatedAmount <= 0 || updatedAmount > 1000000) {
+      console.log("Please provide a valid number for the amount.");
+      return;
+    }
+  }
+
+  // Validate name ONLY if the user provided one
+  if (updatedName !== undefined) {
+    if (typeof updatedName !== "string" || updatedName.trim() === "") {
+      console.log("Please provide a valid name for the expense.");
+      return;
+    }
+  }
+
+  // Apply updates conditionally
+  expenses[expenseIndex].amount =
+    updatedAmount !== undefined ? updatedAmount : expenses[expenseIndex].amount;
+  expenses[expenseIndex].name =
+    updatedName !== undefined
+      ? updatedName.trim()
+      : expenses[expenseIndex].name;
+
+  expensesSave(expenses);
+  console.log(`Expense with ID ${id} has been updated successfully!`);
+};
+
 const helpMessage = `Usage:
-  node index.js add <amount> <name>       - Add a new expense with the specified amount and name.
-  node index.js list                      - List all expenses.
-  node index.js total                     - Display the total of all expenses.
-  node index.js total-by-date <date>     - Display total expenses for a specific date.
-  node index.js select <id1> <id2> ...   - Mark expenses as selected and display their total.
-  node index.js help                     - Display all available commands.
+  node index.js add <amount> <name>         - Add a new expense with the specified amount and name.
+  node index.js list                        - List all expenses.
+  node index.js total                       - Display the total of all expenses.
+  node index.js total-by-date <date>        - Display total expenses for a specific date.
+  node index.js select <id1> <id2> ...      - Mark expenses as selected and display their total.
+  node index.js update <id> <amount> [name] - Update amount, or amount and name.
+  node index.js update <id> <name>          - Update name only.
+  node index.js update <id> <amount>        - Update amount only.
+  node index.js delete <id>                 - Delete an expense by its ID.
+  node index.js help                        - Display all available commands.
 `; // Help message displayed for 'help' command
 
 if (command === "add") {
@@ -211,8 +310,12 @@ if (command === "add") {
   selectAndTotalExpenses(multipleIds); // Execute select command with multiple IDs
 } else if (command === "help") {
   console.log(helpMessage); // Display help message
+} else if (command === "update") {
+  updateExpense(expenseId, newAmount, newName); // Execute update command with expense ID and new values
+} else if (command === "delete") {
+  deletedExpenses(expenseId); // Execute delete command with expense ID
 } else {
   console.log(
-    "Invalid command. Please use 'add', 'list', 'total', 'total-by-date', 'select', or 'help'.", // Error for invalid command
+    "Invalid command. Please use 'add', 'list', 'total', 'total-by-date', 'select', 'update', 'delete', or 'help'.", // Error for invalid command
   );
 }

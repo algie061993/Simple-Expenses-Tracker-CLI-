@@ -69,6 +69,36 @@ Marks multiple expenses as selected by their IDs and displays their total.
 node index.js select 1 2 4
 ```
 
+### Update an Expense
+
+```bash
+node index.js update <id> <amount> [name]
+node index.js update <id> <name>
+node index.js update <id> <amount>
+```
+
+Updates an existing expense by its ID. You can update the amount, name, or both.
+
+**Examples:**
+```bash
+node index.js update 1 300                    # Update amount only
+node index.js update 1 groceries              # Update name only
+node index.js update 1 300 groceries          # Update both amount and name
+```
+
+### Delete an Expense
+
+```bash
+node index.js delete <id>
+```
+
+Deletes an expense by its ID.
+
+**Example:**
+```bash
+node index.js delete 1
+```
+
 ### Show Help
 
 ```bash

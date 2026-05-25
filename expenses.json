@@ -7,13 +7,6 @@
     "selected": false
   },
   {
-    "id": 2,
-    "name": "rice",
-    "amount": 300,
-    "date": "2026-05-20T11:52:57.980Z",
-    "selected": false
-  },
-  {
     "id": 3,
     "name": "bigas",
     "amount": 50,
@@ -43,9 +36,9 @@
   },
   {
     "id": 7,
-    "name": "rent",
-    "amount": 300,
-    "date": "2026-05-22T12:08:18.045Z",
+    "name": "vagetable",
+    "amount": 150,
+    "date": "2026-05-25T11:43:28.110Z",
     "selected": false
   }
 ]
